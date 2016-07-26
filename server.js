@@ -15,12 +15,33 @@ function get_post(req, res) {
 	};
 
 	let data = '';
+	let buffers = [], size = 0;
+	let buffer = null;
 
 	function onData (chuck) {
-		data += chuck;
+		buffers.push(chuck);
+		size += chuck.length;
 	}
 
 	function onEnd () {
+		switch (buffers.length) {
+			case 0:
+				buffer =  new Buffer(0);
+				break;
+			case 1:
+				buffer = buffers[0];
+				break;
+			default:
+				buffer = new Buffer(size);
+				for (let i = 0, pos = 0, l = buffers.length; i < l; i++) {
+					let chunk = buffers[i];
+					chunk.copy(buffer, pos);
+					pos += chunk.length;
+				}
+				break;
+		}
+		data = buffer.toString();
+
 		console.log('data: %s', data);
 		res_data = JSON.parse(data);
 		const str = JSON.stringify(res_data);
@@ -28,12 +49,12 @@ function get_post(req, res) {
 		res.write(str + '\n');
 		res.end();
 
-		fs.writeFile('message.txt', 'Data: ' + data + '\n', {flag: 'a'}, (err) => {
-			if (err) {
-				console.log('have error: %s', err.message);
-			}
-			console.log('saved');
-		})
+		//fs.writeFile('message.txt', 'Data: ' + data + '\n', {flag: 'a'}, (err) => {
+		//	if (err) {
+		//		console.log('have error: %s', err.message);
+		//	}
+		//	console.log('saved');
+		//})
 	}
 
 	if (url_object.pathname == '/req' && req.method === 'POST') {

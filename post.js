@@ -32,7 +32,6 @@ const options = {
 	path: '/req',
 	method: 'POST',
 	headers: {
-		//'COntent-Length': data.length,
 		'COntent-Length': Buffer.byteLength(data, 'utf8'),
 		'Content-Type': context_type
 	}
